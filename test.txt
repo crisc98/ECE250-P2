@@ -1,0 +1,154 @@
+new
+
+capacity 16
+
+push_front 1
+
+!! 2
+
+!! 3
+
+!! 4
+
+!! 5
+
+!! 6
+
+!! 7
+
+!! 8
+
+!! 9
+
+!! 10
+
+!! 11
+
+!! 12
+
+!! 13
+
+!! 14
+
+!! 15
+
+!! 16
+
+!! 17
+
+!! 18
+cout
+
+capacity 32
+
+delete
+
+
+new
+capacity 16
+size 0
+front!
+back!
+push_back 1
+!! 2
+
+!! 3
+
+!! 4
+
+!! 5
+
+!! 6
+
+!! 7
+
+!! 8
+
+!! 9
+
+!! 10
+
+!! 11
+
+!! 12
+
+!! 13
+
+!! 14
+
+!! 15
+
+!! 16
+
+capacity 16
+push_back 17
+
+capacity 32
+push_back 18
+capacity 32
+cout 
+capacity 32
+pop_back
+capacity 32
+cout
+pop_back
+cout
+pop_back
+cout
+pop_back
+cout
+pop_back
+cout
+pop_back
+cout
+pop_back
+cout
+pop_back
+cout
+pop_back
+cout
+pop_back
+cout
+capacity 16
+push_back 99
+!! 99
+!! 99
+!! 99
+!! 99
+!! 99
+!! 99
+!! 99
+!! 99
+!! 99
+pop_back
+cout
+pop_back
+cout
+pop_back
+cout
+pop_back
+cout
+pop_back
+cout
+pop_back
+cout
+pop_back
+cout
+pop_back
+cout
+pop_back
+cout
+capacity 32
+pop_front
+cout
+capacity 16
+cout
+size 8
+clear
+cout
+size 0
+delete
+details
+summary
+
+

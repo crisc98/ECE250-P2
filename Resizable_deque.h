@@ -47,6 +47,7 @@ class Resizable_deque {
         int array_capacity;
 		// Any private member functions
 		//   - helper functions for resizing your array?
+        void upsize();
 
 	// Friends
 
@@ -78,13 +79,14 @@ template <typename Type>
 Resizable_deque<Type>::Resizable_deque( Resizable_deque const &deque )
 // Your initalization list
 {
-	initial_array_capacity = deque.capacity();
-    array_capacity = deque.capacity();
-    ifront = 0;
-    iback = deque.size()-1;
+	initial_array_capacity = deque.initial_array_capacity;
+    array_capacity = deque.array_capacity;
+    ifront = deque.ifront;
+    iback = deque.iback;
     deque_size = deque.size();
     array = new Type[array_capacity];
     std::copy(deque.array, deque.array+deque.size(), array);
+    std::cout << "Copied" << "\n";
 
 }
 
@@ -150,6 +152,7 @@ Type Resizable_deque<Type>::back() const {
     return array[iback];
 }
 
+//Helper function for cout and debugging
 template <typename Type>
 Type Resizable_deque<Type>::at(int n) const {
     return array[n];
@@ -199,29 +202,34 @@ Resizable_deque<Type> &Resizable_deque<Type>::operator=( Resizable_deque<Type> &
 
 template <typename Type>
 void Resizable_deque<Type>::push_front( Type const &obj ) {
-	if(deque_size==array_capacity) {
-        array_capacity *=2;
-        Type* old_array = array;
-        array = new Type[array_capacity];
-        for(int i =0; i<deque_size; i++){
-            array[i+1]=old_array[i];
-        }
-        delete (old_array);
+    if(iback==-1){
+        iback++;
+        array[iback]=obj;
     }
-    else{
-        for(int i = deque_size; i >= 0; i--){
-            array[i] = array[i-1];
-        }
+
+    else if((iback==ifront-1)|| (iback==array_capacity-1&&ifront==0)) {
+        upsize();
+        push_front(obj);
     }
-    array[0] = obj;
+    else if (ifront==0&&iback!=array_capacity-1){
+        ifront=array_capacity-1;
+        array[ifront] = obj;
+    } else if (ifront>0){
+        array[ifront-1]=obj;
+        ifront--;
+    } else if (ifront>iback+1){
+        ifront--;
+        array[ifront]=obj;
+    }
+
+    std::cout <<"F: " <<ifront <<" B: " <<iback << "\n";
     deque_size++;
-    iback++;
 
 }
 
 template <typename Type>
 void Resizable_deque<Type>::push_back( Type const &obj ) {
-    if(deque_size==array_capacity) {
+    if(iback==array_capacity-1) {
         array_capacity *=2;
         Type* old_array = array;
         array = new Type[array_capacity];
@@ -241,11 +249,33 @@ void Resizable_deque<Type>::pop_front() {
     if (empty()){
         throw underflow();
     }
-	for(int i=1;i<deque_size;i++){
-        array[i-1] = array[i];
+
+//	for(int i=1;i<deque_size;i++){
+//        array[i-1] = array[i];
+//    }
+    if(ifront==array_capacity-1){
+        ifront=0;
     }
+    if(ifront<iback){
+        ifront++;
+    }
+    else
+        ifront++;
+
     deque_size--;
-    iback--;
+    float usage = (float)deque_size/array_capacity;
+    if(usage <= 0.25&&array_capacity>16){
+        //std::cout<< "Shrink " << usage << "\n";
+        array_capacity/=2;
+        Type *old_array = array;
+        array = new Type[array_capacity];
+        for(int i = 0; i<deque_size; i++){
+            array[i]=old_array[i];
+        }
+        delete [] old_array;
+        iback--;
+    }
+
 }
 
 template <typename Type>
@@ -254,16 +284,25 @@ void Resizable_deque<Type>::pop_back() {
         throw underflow();
 	array[iback]=0;
     deque_size--;
-    if(deque_size/array_capacity <= 0.25&&array_capacity>initial_array_capacity){
+    float usage = (float)deque_size/array_capacity;
+    if(usage <= 0.25&&array_capacity>initial_array_capacity){
+        std::cout<< "Shrink " << array_capacity << "\n";
         array_capacity/=2;
         Type *old_array = array;
         array = new Type[array_capacity];
-        for(int i = 0; i<deque_size; i++){
+        for(int i = 0; i<array_capacity; i++){
             array[i]=old_array[i];
         }
         delete [] old_array;
     }
-    iback--;
+    if(iback>0)
+        iback--;
+    else if (iback==0)
+        iback = array_capacity-1;
+    else if (iback<0)
+        iback++;
+    else
+        iback--;
 
 }
 
@@ -271,11 +310,13 @@ template <typename Type>
 void Resizable_deque<Type>::clear() {
 	deque_size=0;
     ifront=0;
-    iback=0;
+    iback=-1;
     array_capacity = initial_array_capacity;
+    delete [] array;
     array = new Type[array_capacity];
 
 }
+
 
 
 /////////////////////////////////////////////////////////////////////////
@@ -283,6 +324,28 @@ void Resizable_deque<Type>::clear() {
 /////////////////////////////////////////////////////////////////////////
 
 // Enter any private member functios (helper functions) here
+template <typename Type>
+void Resizable_deque<Type>::upsize(){
+    Type* temp = array;
+    array = new Type[sizeof(temp)*2];
+    array_capacity*=2;
+    for(int i = 0; i<deque_size; i++){
+       if(ifront>iback &&ifront<array_capacity-1){
+           array[i]= temp[ifront];
+           ifront++;
+       }else if(ifront ==array_capacity-1){
+           array[i] = temp[ifront];
+           ifront =0;
+       }else if(ifront <iback);
+        array[i]=temp[iback];
+        iback--;
+    }
+    ifront = 0;
+    iback = deque_size-1;
+    std::cout <<*this << "\n";
+    delete [] temp;
+
+}
 
 
 /////////////////////////////////////////////////////////////////////////
@@ -296,10 +359,23 @@ std::ostream &operator<<( std::ostream &out, Resizable_deque<T> const &list ) {
 //    for(T* it = list.begin(); it !=list.end(); it++){
 //        out << *it << " ";
 //    }
-    for(int i = 0; i< list.size(); i++){
-    out << list.at(i) << " ";
+    if(list.ifront <=list.iback) {
+        for (int i = list.ifront; i < list.iback+1; i++) {
+            out << list.at(i) << " ";
+        }
+        out << "\n";
     }
-    out << "\n";
+    else if(list.iback<0){
+        out << "\n";
+    }
+    else {
+        for (int i = list.ifront; i < list.capacity(); i++) {
+            out << list.at(i) << " Split ";
+        }for (int i = 0; i < list.iback+1; i++) {
+            out << list.at(i) << " ";
+        }
+        out << "\n";
+    }
 
 	return out;
 }
